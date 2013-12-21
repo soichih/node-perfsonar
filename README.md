@@ -1,10 +1,6 @@
 # node-perfsonar
 
-XmlStream is a Node.js XML stream parser and editor, based on
-[node-expat](https://github.com/astro/node-expat) (libexpat SAX-like parser
-binding).
-
-node-perfsonar is a perfsonar client that let you easily access data stored in various perfsonar servers. 
+node-perfsonar is a perfsonar client to access data stored in various perfsonar instances around the world.
 
 ```
 npm install perfsonar
@@ -12,7 +8,7 @@ npm install perfsonar
 
 ## ps.endpoints
 
-perfsonar server publishes which endpoints (source / destination pairs) that the server is currently monitoring.
+perfsonar server publishes lists of endpoints that it monitors.
 If you know the hostname of the perfsonar instance, you can pull list of all endpoints.
 
 ```javascript
@@ -84,7 +80,7 @@ Example output.
        packetInterval: 1 } ] }
 ```
 
-atlas-owamp.bu.edu is a latency monitoring instance. If you try atlas-bwctl.bu.edu instead, you will see iperf endpoints like...
+Why is iperf list empty? Because atlas-owamp.bu.edu is a latency monitoring instance. If you try atlas-bwctl.bu.edu instead, you will see iperf (but not owamp / pinger)
 
 ```javascript
 { pinger: [],
@@ -113,7 +109,7 @@ atlas-owamp.bu.edu is a latency monitoring instance. If you try atlas-bwctl.bu.e
 
 ## ps.owamp
 
-You can pull all owamp measurment data collected within the last hour by..
+You can pull all owamp test results collected within the last hour.
 
 ```javascript
 var ps = require('perfsonar');
@@ -183,8 +179,7 @@ ps.endpoints({server: "psonar1.fnal.gov"}, function(err, endpoints) {
 });
 ```
 
-Currently, you can only specify 1 endpoint (I don't know how to query it on perfsonar/ma service), but I am hoping to be able to specify
-multiple endpoints that you are interested in.
+Currently, you can only specify 1 endpoint (I don't know how to query it on perfsonar/ma service. If you know how, please let me now!)
 
 Sample output.
 
@@ -206,7 +201,7 @@ Sample output.
 
 ## ps.iperf
 
-Similar to ps.owamp, you can query iperf (bandwidth) test results.
+Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to limit number of endpoits.
 
 ```javascript
 var ps = require('perfsonar');
@@ -258,6 +253,8 @@ Sample output
 ## ps.pinger
 
 Querying pingER restuls gathered within the last hour.
+
+Warning: pingER query is slow! Due to some seriously convoluted interface design..
 
 ```javascript
 var ps = require('perfsonar');
@@ -342,7 +339,8 @@ Sample output
        time: 1387656373000 } ] }
 ```
 
-Pinger query on all available endpoints are very slow.. (complain to perfsonar team!) You can specify endpoints that you are interested in.
+Pinger query on all available endpoints are very slow.. (complain to pingER team!) You can specify endpoints that you are interested in. 
+Unlike owamp / iperf, you can specify more than 1 endpoints, but you have to use endpoints returned from endpoints().
 
 ```javascript
 var ps = require('perfsonar');
