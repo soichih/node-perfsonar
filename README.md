@@ -109,13 +109,13 @@ Why is iperf list empty? Because atlas-owamp.bu.edu is a latency monitoring inst
 
 ## ps.owamp
 
-You can pull all owamp test results collected within the last hour.
+You can pull all owamp test results collected within the last hour by...
 
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
 ps.owamp({
-    server: "perfsonar-2.t2.ucsd.edu",-
+    server: "perfsonar-2.t2.ucsd.edu",
     starttime: now - 3600*1000, //-1 hour
     endtime: now
 }, function(err, results) {
@@ -124,7 +124,7 @@ ps.owamp({
 })
 ```
 
-Exmple output..
+Sample output..
 
 ```javascript
 { endpoint:
@@ -160,7 +160,7 @@ Exmple output..
 }
 ```
 
-Or, you can specify which endpoints you want to pull test results for, by using endpoint returned from ps.endpoints() we called earlier.
+Or, you can specify which endpoints you want to pull test results for, by using endpoints returned from ps.endpoints().
 
 ```javascript
 var ps = require('perfsonar');
@@ -169,7 +169,7 @@ ps.endpoints({server: "psonar1.fnal.gov"}, function(err, endpoints) {
     var now = new Date().getTime();
     ps.iperf({
         server: "psonar1.fnal.gov",
-        endpoints: [endpoints.iperf[0]], //just pick one iperf endpoint randomely (you can only set 1 endpoint for now)
+        endpoints: [endpoints.iperf[0]], //just pick one iperf endpoint randomly
         starttime: now - 3600*1000*5, //5 hours
         endtime: now
     }, function(err, results) {
@@ -201,13 +201,14 @@ Sample output.
 
 ## ps.iperf
 
-Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to limit number of endpoits.
+Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to specify endpoint that you 
+are interested in (you can only specify 1 endpoint -- for now)
 
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.owamp({
-    server: "perfsonar-2.t2.ucsd.edu",-
+ps.iperf({
+    server: "perfsonar-2.t2.ucsd.edu",
     starttime: now - 3600*1000*5 //5 hours
 }, function(err, data) {
     if(err) throw err;
@@ -215,7 +216,7 @@ ps.owamp({
 });
 ```
 
-Sample output
+Sample output..
 
 ```javascript
 { endpoint:
@@ -339,8 +340,8 @@ Sample output
        time: 1387656373000 } ] }
 ```
 
-Pinger query on all available endpoints are very slow.. (complain to pingER team!) You can specify endpoints that you are interested in. 
-Unlike owamp / iperf, you can specify more than 1 endpoints, but you have to use endpoints returned from endpoints().
+You can specify endpoints that you are interested in.  Unlike owamp / iperf, though, you can specify more than 1 endpoints, 
+but you have to use endpoints returned from endpoints() which contains _datakeys parameter.
 
 ```javascript
 var ps = require('perfsonar');
