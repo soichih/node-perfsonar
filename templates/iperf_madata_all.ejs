@@ -1,0 +1,23 @@
+<nmwg:message type="SetupDataRequest" id="setupDataRequest1"
+              xmlns:iperf= "http://ggf.org/ns/nmwg/tools/iperf/2.0/"
+              xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/"
+              xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"
+              xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/"
+              xmlns:nmtm="http://ggf.org/ns/nmwg/time/2.0/">
+
+    <nmwg:metadata xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/" id="metadata.4169637">
+        <nmwg:eventType>http://ggf.org/ns/nmwg/tools/iperf/2.0</nmwg:eventType>  
+    </nmwg:metadata>
+
+    <nmwg:metadata id="metadata.4891857.chain" xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/">
+        <select:subject id="subject.14017960" metadataIdRef="metadata.4169637" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"/>     
+        <select:parameters id="parameters.15318723" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/">
+            <nmwg:parameter name="startTime"><%-Math.floor(starttime/1000)%></nmwg:parameter>
+            <nmwg:parameter name="endTime"><%-Math.floor(endtime/1000)%></nmwg:parameter>
+        </select:parameters>
+        <nmwg:eventType>http://ggf.org/ns/nmwg/ops/select/2.0</nmwg:eventType>
+    </nmwg:metadata>
+    <nmwg:data id="data.8818967" metadataIdRef="metadata.4891857.chain"/> 
+
+</nmwg:message>
+

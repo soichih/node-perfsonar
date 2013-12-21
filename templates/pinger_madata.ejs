@@ -1,0 +1,19 @@
+<nmwg:message xmlns:pinger="http://ggf.org/ns/nmwg/tools/pinger/2.0/" xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/" type="SetupDataRequest" id="message.11149258">
+
+<% for(var i=0; i<_keys.length; i++) { %>
+    <nmwg:metadata id="metaid<%-i%>">
+        <pinger:parameters id="params<%-i%>">
+            <nmwg:parameter name="startTime"><%-Math.floor(starttime/1000)%></nmwg:parameter>
+            <nmwg:parameter name="endTime"><%-Math.floor(endtime/1000)%></nmwg:parameter>
+            <nmwg:parameter name="consolidationFunction"><%-consolidation_function%></nmwg:parameter>
+            <nmwg:parameter name="resolution"><%-resolution%></nmwg:parameter>
+        </pinger:parameters>
+        <nmwg:key id="<%-_keys[i]%>"/>
+        <nmwg:eventType>http://ggf.org/ns/nmwg/tools/pinger/2.0/</nmwg:eventType>
+    </nmwg:metadata>
+<% } %>
+
+<% for(var i=0; i<_keys.length; i++) { %>
+    <nmwg:data metadataIdRef="metaid<%-i%>" id="data<%-i%>"/><% } %>
+
+</nmwg:message>

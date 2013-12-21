@@ -1,0 +1,29 @@
+{
+  "name": "perfsonar",
+  "version": "0.0.0",
+  "description": "perfsonar client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/soichih/node-perfsonar.git"
+  },
+  "keywords": [
+    "perfsonar"
+  ],
+  "author": "Soichi Hayashi <soichih@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/soichih/node-perfsonar/issues"
+  },
+  "homepage": "https://github.com/soichih/node-perfsonar",
+  "dependencies": {
+    "ejs": "*",
+    "node-expat": "*",
+    "xml-stream": "*",
+    "async": "*",
+    "merge": "*"
+  }
+}

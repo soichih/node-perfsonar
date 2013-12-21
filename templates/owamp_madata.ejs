@@ -1,0 +1,28 @@
+<nmwg:message type="SetupDataRequest" id="setupDataRequest1"
+              xmlns:owamp= "http://ggf.org/ns/nmwg/tools/owamp/2.0/"
+              xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/"
+              xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"
+              xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/"
+              xmlns:nmtm="http://ggf.org/ns/nmwg/time/2.0/">
+
+    <nmwg:metadata xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/" id="metadata.13767084">
+        <owamp:subject xmlns:owamp="http://ggf.org/ns/nmwg/tools/owamp/2.0" id="subject">
+            <nmwgt:endPointPair xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/">        
+                <nmwgt:src type="<%-endpoint[0].src_type%>" value="<%-endpoint[0].src%>"/>        
+                <nmwgt:dst type="<%-endpoint[0].dst_type%>" value="<%-endpoint[0].dst%>"/>    
+            </nmwgt:endPointPair>
+        </owamp:subject>
+    </nmwg:metadata>
+
+    <nmwg:metadata id="metadata.11472244.chain" xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/">
+        <select:subject id="subject.5673048" metadataIdRef="metadata.13767084" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"/>     
+        <select:parameters id="parameters.9265613" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/">
+            <nmwg:parameter name="startTime"><%-Math.floor(starttime/1000)%></nmwg:parameter>
+            <nmwg:parameter name="endTime"><%-Math.floor(endtime/1000)%></nmwg:parameter>
+        </select:parameters>
+        <nmwg:eventType>http://ggf.org/ns/nmwg/ops/select/2.0</nmwg:eventType>
+    </nmwg:metadata>
+    <nmwg:data id="data.14844561" metadataIdRef="metadata.11472244.chain"/>
+
+</nmwg:message>
+
