@@ -54,7 +54,7 @@ exports.post = function(body, options, callback) {
     }, options);
     var req = http.request(options, callback);
     req.on('error', function(e) {
-        console.log('problem with request:'+e.message);
+        callback(e, null);
     });
     req.write(env);
     req.end();

@@ -1,0 +1,32 @@
+<nmwg:message type="MetadataKeyRequest" id="metadataKeyRequest1"
+              xmlns:trace="http://ggf.org/ns/nmwg/tools/traceroute/2.0/"
+              xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/"
+              xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"
+              xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/"
+              xmlns:nmtm="http://ggf.org/ns/nmwg/time/2.0/">
+
+    <nmwg:metadata xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/" id="metadata.3652674">
+        <trace:subject xmlns:trace="http://ggf.org/ns/nmwg/tools/traceroute/2.0" id="subject">
+            <nmwgt:endPointPair xmlns:nmwgt="http://ggf.org/ns/nmwg/topology/2.0/">        
+<!--
+                <nmwgt:src type="hostname" value="perfsonar-2.t2.ucsd.edu2"/>        
+                <nmwgt:dst type="hostname" value="cmsperfsonar01.fnal.gov"/>    
+-->
+            </nmwgt:endPointPair>
+        </trace:subject>
+        <nmwg:eventType>http://ggf.org/ns/nmwg/tools/traceroute/2.0</nmwg:eventType>  
+    </nmwg:metadata>
+
+    <nmwg:metadata id="metadata.16425397.chain" xmlns:nmwg="http://ggf.org/ns/nmwg/base/2.0/">
+        <select:subject id="subject.16369211" metadataIdRef="metadata.3652674" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/"/>     
+        <select:parameters id="parameters.12877426" xmlns:select="http://ggf.org/ns/nmwg/ops/select/2.0/">
+<!--
+            <nmwg:parameter name="startTime">1387724098</nmwg:parameter>
+            <nmwg:parameter name="endTime">1387727698</nmwg:parameter>
+-->
+        </select:parameters>
+        <nmwg:eventType>http://ggf.org/ns/nmwg/ops/select/2.0</nmwg:eventType>
+    </nmwg:metadata>
+    <nmwg:data id="data.6525090" metadataIdRef="metadata.16425397.chain"/>
+
+</nmwg:message>

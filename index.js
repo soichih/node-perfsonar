@@ -11,8 +11,8 @@ exports.echo = function(options, callback) {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: Math.floor(now.getTime()) - 3600*1000*3,
-        endtime: Math.floor(now.getTime())
+        starttime: now.getTime() - 3600*1000*3,
+        endtime: now.getTime()
     };
     var options = merge(default_options, options);
     var request_options = {
@@ -41,6 +41,9 @@ exports.endpoints = function(options, callback) {
         },
         pinger: function(next) {
             exports.endpoints_pinger(options, next);
+        },
+        traceroute: function(next) {
+            exports.endpoints_traceroute(options, next);
         }
     }, callback);
 };
@@ -50,8 +53,8 @@ exports.endpoints_iperf = function(options, callback) {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: Math.floor(now.getTime()) - 3600*1000*3,
-        endtime: Math.floor(now.getTime())
+        starttime: now.getTime() - 3600*1000*3,
+        endtime: now.getTime()
     };
     var options = merge(default_options, options);
     var request_options = {
@@ -64,7 +67,7 @@ exports.endpoints_iperf = function(options, callback) {
     scum.post_and_parse(body, request_options, function(err, body){
         var endpoints = [];
         if(err) {
-            callback(null, endpoints); //return empty list
+            callback(null, null); //return empty list
             return;
         }
         try {
@@ -72,7 +75,7 @@ exports.endpoints_iperf = function(options, callback) {
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
                 //console.log("perfsonar.endpoints_iperf :: "+options.server+" "+msg);
-                callback(null, endpoints);
+                callback(null, null);
             } catch(err) {
                 var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
                 data.forEach(function(item) {
@@ -103,8 +106,8 @@ exports.endpoints_owamp = function(options, callback) {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: Math.floor(now.getTime()) - 3600*1000*3,
-        endtime: Math.floor(now.getTime())
+        starttime: now.getTime() - 3600*1000*3,
+        endtime: now.getTime()
     };
     var options = merge(default_options, options);
     var request_options = {
@@ -117,7 +120,7 @@ exports.endpoints_owamp = function(options, callback) {
     scum.post_and_parse(body, request_options, function(err, body){
         var endpoints = [];
         if(err) {
-            callback(null, endpoints); //return empty list
+            callback(null, null); //return empty list
             return;
         }
         try {
@@ -126,7 +129,7 @@ exports.endpoints_owamp = function(options, callback) {
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
                 //console.log("perfsonar.endpoints_owamp :: "+options.server+" "+msg);
-                callback(null, endpoints);
+                callback(null, null);
             } catch(err) {
                 var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
                 data.forEach(function(item) {
@@ -174,7 +177,7 @@ exports.endpoints_pinger = function(options, callback) {
         if(err) {
             //post error.. could be a real issue, but could also happen if server is not supporting pinger
             //for now, let's return empty list
-            callback(null, []); //return empty list
+            callback(null, null); //return empty list
             return;
         }
         try {
@@ -183,7 +186,7 @@ exports.endpoints_pinger = function(options, callback) {
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
                 //console.log("perfsonar.endpoints_pinger :: "+options.server+" "+msg);
-                callback(null, []);
+                callback(null, null);
             } catch(err) {
                 //parse metadata
                 var end_and_datas = {};  //used to put data once it's found
@@ -267,14 +270,70 @@ exports.endpoints_pinger = function(options, callback) {
     });
 }
 
+exports.endpoints_traceroute = function(options, callback) {
+    var options = merge({
+        server: "perfsonar-2.t2.ucsd.edu",
+        port: 8086,
+        path: "/perfSONAR_PS/services/tracerouteMA"
+    }, options);
+    var request_options = {
+        host: options.server,
+        port: options.port,
+        path: options.path,
+        debug: false
+    };
+    var body = scum.render("traceroute_endpoints.ejs");
+    //console.dir(body);
+    scum.post_and_parse(body, request_options, function(err, body){
+        //console.log(JSON.stringify(body));
+        if(err) {
+            //post error.. could be a real issue, but could also happen if server is not supporting pinger
+            //for now, let's return empty list
+            callback(null, null); //return empty list
+            return;
+        }
+        try {
+            try {
+                //see if we have message
+                var data = body[0]["nmwg:message"][0]['nmwg:data'];
+                var msg = data[0]["nmwgr:datum"][0]['_'];
+                //console.log("perfsonar.endpoints_pinger :: "+options.server+" "+msg);
+                callback(null, null);
+            } catch(err) {
+                var endpoints = [];
+                var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
+                data.forEach(function(item) {
+                    var endpoint;
+                    //var id = item['$']['id'];
+                    var entry = item['traceroute:subject'][0]['nmwgt:endPointPair'][0];
+                    var subjectid = item['traceroute:subject'][0]['$']['id'];
+                    //var mid = subjectid.substring(5,subjectid.length);
+                    endpoint = {
+                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        src: entry['nmwgt:src'][0]['$']['value'],
+                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        dst: entry['nmwgt:dst'][0]['$']['value']
+                        //_mid: mid
+                    }
+                    endpoints.push(endpoint);
+                });
+                callback(null, endpoints);
+            }
+        } catch(err) {
+            console.dir(err);
+            callback(err, null);
+        }
+    });
+}
+
 //pull iperf restuls
 exports.iperf = function(options, callback) {
     var default_options = {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: Math.floor(now.getTime()) - 3600*1000*3,
-        endtime: Math.floor(now.getTime()),
+        starttime: now.getTime() - 3600*1000*3,
+        endtime: now.getTime(),
         debug: false 
     };
     var options = merge(default_options, options);
@@ -357,8 +416,8 @@ exports.owamp = function(options, callback) {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: Math.floor(now.getTime()) - 3600*1000*3,
-        endtime: Math.floor(now.getTime())
+        starttime: now.getTime() - 3600*1000*3,
+        endtime: now.getTime()
     };
     var options = merge(default_options, options);
     var body;
@@ -446,6 +505,98 @@ exports.owamp = function(options, callback) {
     });
 };
 
+exports.traceroute = function(options, callback) {
+    var default_options = {
+        server: "perfsonar-2.t2.ucsd.edu",
+        port: 8086,
+        path: "/perfSONAR_PS/services/tracerouteMA",
+        starttime: now.getTime() - 3600*1000*24, 
+        endtime: now.getTime()
+    };
+    var options = merge(default_options, options);
+    var body;
+    if(options.endpoints == undefined) {
+        //body = scum.render("traceroute_madata_all.ejs", options);
+        throw new Error("please specify endpoints");
+    } else {
+        //console.dir(options.endpoints);
+        body = scum.render("traceroute_madata.ejs", options);
+    }
+    var request_options = {
+        host: options.server,
+        port: options.port,
+        path: options.path,
+        debug: true
+    };
+    //console.log(body);
+    scum.post(body, request_options, function(res){
+        res.setEncoding('utf8');
+        var xml = new xmlstream(res);
+        var endpoint, routes, result = null, results = [], time, valueunit;
+
+        var debug_xml = "";
+        if(request_options.debug) { 
+            res.on('data', function (chunk) {
+                debug_xml += chunk;
+            });
+        };
+
+        xml.on('startElement: nmwg:metadata', function(data) {
+            if(result !== null) {
+                results.push({endpoint: endpoint, data: result});
+            }
+            endpoint = {};
+            result = [];
+        });
+        xml.on('endElement: nmwgt:endPointPair > nmwgt:src', function(data) {
+            endpoint.src_type = data['$']['type'];
+            endpoint.src = data['$']['value'];
+        });
+        xml.on('endElement: nmwgt:endPointPair > nmwgt:dst', function(data) {
+            endpoint.dst_type = data['$']['type'];
+            endpoint.dst = data['$']['value'];
+        });
+        xml.on('endElement: nmwg:parameter', function(data) {
+            var key = data['$']['name'];
+            var value = parseInt(data['$']['value']);
+            endpoint[key] = value; 
+        });
+        xml.on('startElement: nmwg:data', function(data) {
+            routes = {};
+            time = null;
+        });        
+        xml.on('endElement: traceroute:datum', function(data) {
+            var route = data['$'];
+            var ttl = route.ttl;
+            if(routes[ttl] === undefined) {
+                routes[ttl] = {hop: undefined, values:[]};
+            }
+            routes[ttl].hop = route.hop;
+            var value_id = route.queryNum;
+            var value = parseFloat(route.value);
+            routes[ttl].values.push(value); //let's ignore queryNum for now...
+
+            //all datum seem to contain the same time.. so let's promote this to higher in the tree
+            time = parseInt(route.timeValue)*1000;
+            valueunit = route.valueUnits;
+        });        
+        xml.on('endElement: nmwg:data', function(data) {
+            result.push({time: time, unit: valueunit, routes: routes});
+            //results.push({endpoint: endpoint, data: routes});
+        });
+        xml.on('end', function() {
+            if(request_options.debug) {
+                console.log(debug_xml);
+            }
+            if(result !== null) {
+                results.push({endpoint: endpoint, data: result});
+            }
+            callback(null, results);
+        });
+    });
+};
+
+
 //set options.endpoint with list of endpoints obtained from endpoints_pinger()
 //so that it has _datakeys array.
 exports.pinger = function(options, callback) {
@@ -453,8 +604,8 @@ exports.pinger = function(options, callback) {
         server: "web100.maxgigapop.net",
         port: 8075,
         path: "/perfSONAR_PS/services/pinger/ma",
-        starttime: Math.floor(now.getTime()) - 1800*5*1000,
-        endtime: Math.floor(now.getTime()),
+        starttime: now.getTime() - 1800*5*1000,
+        endtime: now.getTime(),
         resolution: 5,
         consolidation_function: "AVERAGE"
     }, options);
@@ -501,10 +652,8 @@ exports.pinger = function(options, callback) {
             callback(null, res);
         });
         */
-
         var body = scum.render("pinger_madata.ejs", options);
         //console.log(body);
-        var debug_body = "";
         scum.post(body, request_options, function(res){
             res.setEncoding('utf8');
             var xml = new xmlstream(res);
@@ -514,9 +663,12 @@ exports.pinger = function(options, callback) {
             var pinger_params;
             var results = {};
 
+            /*
+            var debug_body = "";
             res.on('data', function (chunk) {
                 debug_body += chunk;
             });
+            */
 
             xml.on('endElement: nmwg:metadata', function(mdata) {
                 if(mdata['$']['id'] == "meta1") {
