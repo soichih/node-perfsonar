@@ -8,14 +8,14 @@ node-perfsonar is a perfsonar client to access data stored in various perfsonar 
 npm install perfsonar
 ```
 
-## ps.endpoints
+## ps.endpoint
 
 perfsonar server publishes lists of endpoints that it monitors.
 If you know the hostname of the perfsonar instance, you can pull list of all endpoints.
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoints({server: 'atlas-owamp.bu.edu'}, function(err, endpoints) {
+ps.endpoint({server: 'atlas-owamp.bu.edu'}, function(err, endpoints) {
     if(err) throw err;
     console.dir(endpoints);
 });
@@ -166,7 +166,7 @@ Or, you can specify which endpoints you want to pull test results for, by using 
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoints({server: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
+ps.endpoint({server: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
     ps.owamp({
         server: "perfsonar-2.t2.ucsd.edu",
@@ -362,7 +362,7 @@ but you have to use endpoints returned from endpoints() which contains _datakeys
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoints({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
+ps.endpoint({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
     ps.pinger({
         server: "perfsonar01.cmsaf.mit.edu",
         endpoints: [ endpoints.pinger[0], endpoints.pinger[1] ]
@@ -383,7 +383,7 @@ Querying traceroute results gathered within the last hour.
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.endpoints({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
+ps.endpoint({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
     ps.traceroute({
         server: "atlas-owamp.bu.edu",
         starttime: now - 3600*1000,
