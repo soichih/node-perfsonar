@@ -1,5 +1,7 @@
 # node-perfsonar
 
+## The simplest perfsonar client in the world.
+
 node-perfsonar is a perfsonar client to access data stored in various perfsonar instances around the world.
 
 ```
@@ -253,7 +255,7 @@ Sample output..
 
 ## ps.pinger
 
-Querying pingER restuls gathered within the last hour.
+Querying pingER results gathered within the last hour.
 
 Warning: pingER query is slow! Due to some seriously convoluted interface design..
 
@@ -361,7 +363,7 @@ ps.endpoints({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
 
 ## ps.traceroute
 
-Querying traceroute restuls gathered within the last hour.
+Querying traceroute results gathered within the last hour.
 
 ```javascript
 var ps = require('perfsonar');
