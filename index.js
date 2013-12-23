@@ -3,6 +3,8 @@ var scum = require('./scum');
 var merge = require('merge');
 var async = require('async');
 var xmlstream = require('xml-stream');
+var http = require('http');
+var htmlp = require('html-parser');
 
 var now = new Date();
 
@@ -34,6 +36,9 @@ exports.echo = function(options, callback) {
 //list all endpoints from various services
 exports.endpoint = function(options, callback) {
     async.parallel({
+        hostinfo: function(next) {
+            exports.hostinfo(options.server, next);
+        },
         iperf: function(next) {
             exports.endpoint_iperf(options, next);
         },
@@ -47,6 +52,60 @@ exports.endpoint = function(options, callback) {
             exports.endpoint_traceroute(options, next);
         }
     }, callback);
+};
+
+exports.hostinfo = function(host, callback) {
+    var options = {
+        host: host,
+        path: '/toolkit/',
+        method: 'GET'
+    };
+    var req = http.request(options, function(res) {
+        var html = "";
+        res.on('data', function(chunk) {
+            html += chunk;
+        });
+        res.on('end', function() {
+            //console.log(html);
+            if(res.statusCode == 200) {
+                var next = null;
+                var info = {};
+                htmlp.parse(html, {
+                    text: function(value) {
+                        if(next !== null) {
+                            info[next] = value;
+                            next = null;
+                        } else {
+                            if(value == "Latitude,Longitude") {
+                                next = "latlng";
+                            } else if(value == "Administrator Name") {
+                                next = "admin_name";
+                            } else if(value == "Zip Code") {
+                                next = "zipcode";
+                            } else if(value == "City, State, Country") {
+                                next = "address";
+                            } else if(value == "Organization Name") {
+                                next = "org_name";
+                            } else if(value == "Administrator Email") {
+                                next = "admin_email";
+                            } else {
+                                next = null;
+                            }
+                        }
+                    },
+                    closeElement: function(name) {
+                        if(name == "html") {
+                            callback(null, info);
+                        }
+                    }
+                });
+            }
+        });
+    });
+    req.on('error', function(e) {
+        callback(e, null);
+    });
+    req.end();
 };
 
 exports.endpoint_iperf = function(options, callback) {
