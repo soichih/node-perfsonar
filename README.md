@@ -109,14 +109,14 @@ Why is iperf list empty? Because atlas-owamp.bu.edu is a latency monitoring inst
        duration: 30 } ] }
 ```
 
-## ma.owamp
+## ps.owamp
 
 You can pull all owamp test results collected within the last hour by...
 
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.ma.owamp({
+ps.owamp({
     server: "perfsonar-2.t2.ucsd.edu",
     starttime: now - 3600*1000, //-1 hour
     endtime: now
@@ -168,7 +168,7 @@ Or, you can specify which endpoints you want to pull test results for, by using 
 var ps = require('perfsonar');
 ps.endpoints({server: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
-    ps.ma.owamp({
+    ps.owamp({
         server: "perfsonar-2.t2.ucsd.edu",
         endpoints: [endpoints.owamp[0]] //just pick one randomly from iperf endpoints
     }, function(err, results) {
@@ -216,7 +216,7 @@ Sample output.
 ...
 ```
 
-## ps.ma.iperf
+## ps.iperf
 
 Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to specify endpoint that you 
 are interested in (you can only specify 1 endpoint -- for now)
@@ -224,7 +224,7 @@ are interested in (you can only specify 1 endpoint -- for now)
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.ma.iperf({
+ps.iperf({
     server: "perfsonar-2.t2.ucsd.edu",
     starttime: now - 3600*1000*5 //5 hours
 }, function(err, data) {
@@ -268,7 +268,7 @@ Sample output..
     ...
 ```
 
-## ps.ma.pinger
+## ps.pinger
 
 Querying pingER results gathered within the last hour.
 
@@ -277,7 +277,7 @@ Warning: pingER query is slow! Due to some seriously convoluted interface design
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.ma.pinger({
+ps.pinger({
     server: "perfsonar01.cmsaf.mit.edu",
     starttime: now - 3600*1000
 }, function(err, results) {
@@ -363,7 +363,7 @@ but you have to use endpoints returned from endpoints() which contains _datakeys
 ```javascript
 var ps = require('perfsonar');
 ps.endpoints({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
-    ps.ma.pinger({
+    ps.pinger({
         server: "perfsonar01.cmsaf.mit.edu",
         endpoints: [ endpoints.pinger[0], endpoints.pinger[1] ]
     }, function(err, results) {
@@ -384,7 +384,7 @@ Querying traceroute results gathered within the last hour.
 var ps = require('perfsonar');
 var now = new Date().getTime();
 ps.endpoints({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
-    ps.ma.traceroute({
+    ps.traceroute({
         server: "atlas-owamp.bu.edu",
         starttime: now - 3600*1000,
         endtime: now,
