@@ -526,7 +526,7 @@ exports.traceroute = function(options, callback) {
         host: options.server,
         port: options.port,
         path: options.path,
-        debug: true
+        debug: false
     };
     //console.log(body);
     scum.post(body, request_options, function(res){
@@ -567,7 +567,7 @@ exports.traceroute = function(options, callback) {
         });        
         xml.on('endElement: traceroute:datum', function(data) {
             var route = data['$'];
-            var ttl = route.ttl;
+            var ttl = parseInt(route.ttl);
             if(routes[ttl] === undefined) {
                 routes[ttl] = {hop: undefined, values:[]};
             }
@@ -581,8 +581,12 @@ exports.traceroute = function(options, callback) {
             valueunit = route.valueUnits;
         });        
         xml.on('endElement: nmwg:data', function(data) {
-            result.push({time: time, unit: valueunit, routes: routes});
-            //results.push({endpoint: endpoint, data: routes});
+            //turn routes object into an array (sorted by ttl)
+            var routes_a = [];
+            for(var t = 1; t <= Object.keys(routes).length; t++) {
+                routes_a.push(routes[t]);
+            }
+            result.push({time: time, unit: valueunit, routes: routes_a});
         });
         xml.on('end', function() {
             if(request_options.debug) {

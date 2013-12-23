@@ -359,3 +359,144 @@ ps.endpoints({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
 
 ```
 
+## ps.traceroute
+
+Querying traceroute restuls gathered within the last hour.
+
+```javascript
+var ps = require('perfsonar');
+var now = new Date().getTime();
+ps.endpoints({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
+    ps.traceroute({
+        server: "atlas-owamp.bu.edu",
+        starttime: now - 3600*1000,
+        endtime: now,
+        endpoints: [ endpoints.traceroute[0] ]
+    }, function(err, results) {
+        console.dir(results[0].endpoint);
+        console.log(JSON.stringify(results[0].data[0], undefined, 2));
+    });
+});
+```
+
+Sample output. 
+
+```javascript
+{ src_type: 'hostname',
+  src: 'atlas-npt1.bu.edu',
+  dst_type: 'hostname',
+  dst: 'ccperfsonar2-lhcopn.in2p3.fr' }
+{
+  "time": 1387756831000,
+  "unit": "ms",
+  "routes": [
+    {
+      "hop": "192.5.207.1",
+      "values": [
+        0.301,
+        0.433,
+        0.59
+      ]
+    },
+    {
+      "hop": "192.5.89.141",
+      "values": [
+        0.478,
+        0.556,
+        0.613
+      ]
+    },
+    {
+      "hop": "192.5.89.29",
+      "values": [
+        9.901,
+        10.082,
+        10.125
+      ]
+    },
+    {
+      "hop": "192.5.89.222",
+      "values": [
+        14.178,
+        14.19,
+        14.177
+      ]
+    },
+    {
+      "hop": "198.71.45.237",
+      "values": [
+        100.873,
+        90.322,
+        100.859
+      ]
+    },
+    {
+      "hop": "62.40.98.115",
+      "values": [
+        88.385,
+        88.455,
+        100.776
+      ]
+    },
+    {
+      "hop": "62.40.98.80",
+      "values": [
+        120.716,
+        108.243,
+        108.347
+      ]
+    },
+    {
+      "hop": "62.40.98.77",
+      "values": [
+        114.185,
+        114.386,
+        114.348
+      ]
+    },
+    {
+      "hop": "62.40.124.70",
+      "values": [
+        129.268,
+        118.524,
+        116.721
+      ]
+    },
+    {
+      "hop": "error:requestTimedOut",
+      "values": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "hop": "193.51.186.177",
+      "values": [
+        119.436,
+        119.841,
+        119.807
+      ]
+    },
+    {
+      "hop": "192.70.69.130",
+      "values": [
+        107.796,
+        110.56,
+        110.389
+      ]
+    },
+    {
+      "hop": "193.48.99.78",
+      "values": [
+        107.14,
+        119.619,
+        119.501
+      ]
+    }
+  ]
+}
+
+```
+
+Values usually contains 3 values.. for each tests. You have to have 1 and only 1 endpoint specified (at the moment)
