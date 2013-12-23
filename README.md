@@ -166,19 +166,17 @@ Or, you can specify which endpoints you want to pull test results for, by using 
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoints({server: "psonar1.fnal.gov"}, function(err, endpoints) {
+ps.endpoints({server: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
-    var now = new Date().getTime();
-    ps.iperf({
-        server: "psonar1.fnal.gov",
-        endpoints: [endpoints.iperf[0]], //just pick one iperf endpoint randomly
-        starttime: now - 3600*1000*5, //5 hours
-        endtime: now
+    ps.owamp({
+        server: "perfsonar-2.t2.ucsd.edu",
+        endpoints: [endpoints.owamp[0]] //just pick one randomly from iperf endpoints
     }, function(err, results) {
         if(err) throw err;
         console.dir(results[0]); //again, display data for the first endpoint (although there should be only 1)
     });
 });
+
 ```
 
 Currently, you can only specify 1 endpoint (I don't know how to query it on perfsonar/ma service. If you know how, please let me now!)
@@ -187,18 +185,35 @@ Sample output.
 
 ```javascript
 { endpoint:
-   { src_type: 'hostname',
-     src: 'psonar1.fnal.gov',
-     dst_type: 'hostname',
-     dst: 'perfsonar-ps.cnaf.infn.it',
-     protocol: 'TCP',
-     duration: 20 },
+   { src_type: 'ipv4',
+     src: '132.239.252.68',
+     dst_type: 'ipv4',
+     dst: '169.228.130.40',
+     count: 108000,
+     bucket_width: 0.0001,
+     schedule: [ [Object] ] },
   data:
-   [ { time: 1387632659326, throughput: 176263000 },
-     { time: 1387636109411, throughput: 320624000 },
-     { time: 1387639808107, throughput: 332058000 },
-     { time: 1387640253208, throughput: 350271000 },
-     { time: 1387643617324, throughput: 338400000 } ] }
+   [ { start_time: 1387747211387,
+       end_time: 1387747270209,
+       min_ttl: 252,
+       max_ttl: 252,
+       min_delay: 0.000152111,
+       max_delay: 0.000980377,
+       max_error: 0.000177383,
+       duplicates: 0,
+       sent: 600,
+       loss: 0 },
+     { start_time: 1387747244111,
+       end_time: 1387747302265,
+       min_ttl: 252,
+       max_ttl: 252,
+       min_delay: 0.000152111,
+       max_delay: 0.00146103,
+       max_error: 0.000177383,
+       duplicates: 0,
+       sent: 600,
+       loss: 0 },
+...
 ```
 
 ## ps.iperf
@@ -501,4 +516,4 @@ Sample output.
 
 ```
 
-Values usually contains 3 values.. for each tests. You have to have 1 and only 1 endpoint specified (at the moment)
+Values usually contains 3 values.. for each tests. You have to have 1 and only 1 endpoint specified (for now)
