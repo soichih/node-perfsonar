@@ -36,9 +36,11 @@ exports.echo = function(options, callback) {
 //list all endpoints from various services
 exports.endpoint = function(options, callback) {
     async.parallel({
+        /*
         hostinfo: function(next) {
             exports.hostinfo(options.server, next);
         },
+        */
         iperf: function(next) {
             exports.endpoint_iperf(options, next);
         },
@@ -54,6 +56,7 @@ exports.endpoint = function(options, callback) {
     }, callback);
 };
 
+//unsupported feature... 
 exports.hostinfo = function(host, callback) {
     var options = {
         host: host,
