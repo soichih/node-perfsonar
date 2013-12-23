@@ -1,6 +1,6 @@
 {
   "name": "perfsonar",
-  "version": "0.0.2",
+  "version": "0.0.5",
   "description": "perfsonar client",
   "main": "index.js",
   "scripts": {
@@ -23,6 +23,7 @@
     "ejs": "*",
     "node-expat": "*",
     "xml-stream": "*",
+    "xml2js": "*",
     "async": "*",
     "merge": "*"
   }
