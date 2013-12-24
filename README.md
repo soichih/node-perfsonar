@@ -224,48 +224,98 @@ are interested in (you can only specify 1 endpoint -- for now)
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.iperf({
-    server: "perfsonar-2.t2.ucsd.edu",
-    starttime: now - 3600*1000*5 //5 hours
-}, function(err, data) {
+var server = "mannperf2.itns.purdue.edu";
+ps.endpoint({server: server}, function(err, endpoints) {
     if(err) throw err;
-    console.dir(data[0]);
+    ps.iperf({
+        server: server,
+        starttime: now - 3600*1000*24*90,//90 days
+        endpoints: [endpoints.iperf[0] ]
+    }, function(err, data) {
+        if(err) throw err;
+        console.log(JSON.stringify(data, null, 2));
+    });
 });
 ```
 
 Sample output..
 
 ```javascript
-{ endpoint:
-   { src_type: 'ipv4',
-     src: '132.239.252.68',
-     dst_type: 'ipv4',
-     dst: '169.228.130.40',
-     count: 108000,
-     bucket_width: 0.0001,
-     schedule: [ [Object] ] },
-  data:
-   [ { start_time: 1387646616309,
-       end_time: 1387646679361,
-       min_ttl: 252,
-       max_ttl: 252,
-       min_delay: 0.000457287,
-       max_delay: 0.000565529,
-       max_error: 0.000190258,
-       duplicates: 0,
-       sent: 600,
-       loss: 0 },
-     { start_time: 1387646620226,
-       end_time: 1387646681809,
-       min_ttl: 252,
-       max_ttl: 252,
-       min_delay: 0.00045681,
-       max_delay: 0.00242376,
-       max_error: 0.000190258,
-       duplicates: 0,
-       sent: 600,
-       loss: 0 }
-    ...
+[
+  {
+    "endpoint": {
+      "src_type": "hostname",
+      "src": "hcc-ps02.unl.edu",
+      "dst_type": "ipv4",
+      "dst": "128.211.143.4",
+      "protocol": "TCP",
+      "duration": 30
+    },
+    "data": [
+      {
+        "time": 1380742483152,
+        "throughput": 928939000
+      },
+      {
+        "time": 1380788934185,
+        "throughput": 928712000
+      },
+      {
+        "time": 1380850884317,
+        "throughput": 920837000
+      },
+      {
+        "time": 1380907907430,
+        "throughput": 927410000
+      },
+      {
+        "time": 1380932116340,
+        "throughput": 893389000
+      },
+      {
+        "time": 1380967851138,
+        "throughput": 928438000
+      },
+      {
+        "time": 1380987632403,
+        "throughput": 928993000
+      },
+      {
+        "time": 1381027201152,
+        "throughput": 928007000
+      },
+      {
+        "time": 1381043975321,
+        "throughput": 929642000
+      },
+      {
+        "time": 1381073308622,
+        "throughput": 925931000
+      },
+      {
+        "time": 1381104010343,
+        "throughput": 928380000
+      },
+...
+      {
+        "time": 1382270196285,
+        "throughput": 929267000
+      },
+      {
+        "time": 1382309807414,
+        "throughput": 914432000
+      },
+      {
+        "time": 1382329802398,
+        "throughput": 929891000
+      },
+      {
+        "time": 1382339372381,
+        "throughput": 324325000
+      }
+    ]
+  }
+]
 ```
 
 ## ps.pinger

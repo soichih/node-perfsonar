@@ -5,8 +5,28 @@ var async = require('async');
 var xmlstream = require('xml-stream');
 var http = require('http');
 var htmlp = require('html-parser');
+var net = require('net');
 
 var now = new Date();
+
+function setaddrtype(endpoints) {
+    endpoints.forEach(function(endpoint) {
+        if(net.isIPv4(endpoint.src)) {
+            endpoint.src_type = "ipv4";
+        } else if(net.isIPv6(endpoint.src)) {
+            endpoint.src_type = "ipv6";
+        } else {
+            endpoint.src_type = "hostname";
+        }
+        if(net.isIPv4(endpoint.dst)) {
+            endpoint.dst_type = "ipv4";
+        } else if(net.isIPv6(endpoint.dst)) {
+            endpoint.dst_type = "ipv6";
+        } else {
+            endpoint.dst_type = "hostname";
+        }
+    });
+}
 
 exports.echo = function(options, callback) {
     var default_options = {
@@ -147,9 +167,9 @@ exports.endpoint_iperf = function(options, callback) {
                     //var id = item['$']['id'];
                     var entry = item['iperf:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
-                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
                         protocol: item['nmwg:parameters'][0]['nmwg:parameter'][0]['_'],
                         duration: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_'])
@@ -202,9 +222,9 @@ exports.endpoint_owamp = function(options, callback) {
                     //var id = item['$']['id'];
                     var entry = item['owamp:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
-                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
                         count: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][0]['_']),
                         bucket_width: parseFloat(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_']),
@@ -268,9 +288,9 @@ exports.endpoint_pinger = function(options, callback) {
 
                     var mid = item['$']['id'];
                     var endpoint = {
-                        src_type: subject['nmwgt:endPointPair'][0]['nmwgt:src'][0]['$']['type'],
+                        //src_type: subject['nmwgt:endPointPair'][0]['nmwgt:src'][0]['$']['type'],
                         src: subject['nmwgt:endPointPair'][0]['nmwgt:src'][0]['$']['value'],
-                        dst_type: subject['nmwgt:endPointPair'][0]['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: subject['nmwgt:endPointPair'][0]['nmwgt:dst'][0]['$']['type'],
                         dst: subject['nmwgt:endPointPair'][0]['nmwgt:dst'][0]['$']['value'],
                         _datakeys: []
                     };
@@ -376,9 +396,9 @@ exports.endpoint_traceroute = function(options, callback) {
                     var subjectid = item['traceroute:subject'][0]['$']['id'];
                     //var mid = subjectid.substring(5,subjectid.length);
                     endpoint = {
-                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value']
                         //_mid: mid
                     }
@@ -399,7 +419,7 @@ exports.iperf = function(options, callback) {
         server: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
-        starttime: now.getTime() - 3600*1000*3,
+        starttime: now.getTime() - 3600*1000*5,
         endtime: now.getTime(),
         debug: false 
     };
@@ -408,6 +428,7 @@ exports.iperf = function(options, callback) {
     if(options.endpoints == undefined) {
         body = scum.render("iperf_madata_all.ejs", options);
     } else {
+        setaddrtype(options.endpoints);
         body = scum.render("iperf_madata.ejs", options);
     }
     var request_options = {
@@ -416,8 +437,9 @@ exports.iperf = function(options, callback) {
         path: options.path,
         debug: options.debug
     };
-    //console.log(body);
+    //console.dir(body);
     scum.post_and_parse(body, request_options, function(err, body){
+        //console.dir(JSON.stringify(body));
         if(err) throw err;
         try {
             var all_results = [];
@@ -436,9 +458,9 @@ exports.iperf = function(options, callback) {
                     var id = item['$']['id'];
                     var entry = item['iperf:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
-                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
                         protocol: item['nmwg:parameters'][0]['nmwg:parameter'][0]['_'],
                         duration: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_'])
@@ -492,6 +514,7 @@ exports.owamp = function(options, callback) {
     if(options.endpoints == undefined) {
         body = scum.render("owamp_madata_all.ejs", options);
     } else {
+        setaddrtype(options.endpoints);
         body = scum.render("owamp_madata.ejs", options);
     }
     var request_options = {
@@ -519,9 +542,9 @@ exports.owamp = function(options, callback) {
                     var id = item['$']['id'];
                     var entry = item['owamp:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
-                        src_type: entry['nmwgt:src'][0]['$']['type'],
+                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        dst_type: entry['nmwgt:dst'][0]['$']['type'],
+                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
                         count: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][0]['_']),
                         bucket_width: parseFloat(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_']),
@@ -588,7 +611,7 @@ exports.traceroute = function(options, callback) {
         //body = scum.render("traceroute_madata_all.ejs", options);
         throw new Error("please specify endpoints");
     } else {
-        //console.dir(options.endpoints);
+        setaddrtype(options.endpoints);
         body = scum.render("traceroute_madata.ejs", options);
     }
     var request_options = {
@@ -618,11 +641,11 @@ exports.traceroute = function(options, callback) {
             result = [];
         });
         xml.on('endElement: nmwgt:endPointPair > nmwgt:src', function(data) {
-            endpoint.src_type = data['$']['type'];
+            //endpoint.src_type = data['$']['type'];
             endpoint.src = data['$']['value'];
         });
         xml.on('endElement: nmwgt:endPointPair > nmwgt:dst', function(data) {
-            endpoint.dst_type = data['$']['type'];
+            //endpoint.dst_type = data['$']['type'];
             endpoint.dst = data['$']['value'];
         });
         xml.on('endElement: nmwg:parameter', function(data) {
@@ -702,6 +725,7 @@ exports.pinger = function(options, callback) {
         if(!Array.isArray(options.endpoints)) {
             options.endpoints = [options.endpoints];
         }
+        setaddrtype(options.endpoints);
 
         var key_to_endpoints = {}; //mapping used to map result data back to endpoint
         options._keys = [];

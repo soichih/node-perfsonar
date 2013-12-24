@@ -1,6 +1,6 @@
 {
   "name": "perfsonar",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "perfsonar client",
   "main": "index.js",
   "scripts": {
