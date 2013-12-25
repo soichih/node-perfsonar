@@ -52,7 +52,9 @@ exports.post = function(body, options, callback) {
     var options = merge({
         method: 'POST'
     }, options);
-    var req = http.request(options, callback);
+    var req = http.request(options, function(res) {
+        callback(null, res);
+    });
     req.on('error', function(e) {
         callback(e, null);
     });

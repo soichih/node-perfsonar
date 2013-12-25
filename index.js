@@ -621,10 +621,14 @@ exports.traceroute = function(options, callback) {
         debug: options.debug
     };
     //console.log(body);
-    scum.post(body, request_options, function(res){
+    scum.post(body, request_options, function(err, res){
+        if(err) {
+            //console.dir(request_options);
+            throw err;
+        }
         res.setEncoding('utf8');
         var xml = new xmlstream(res);
-        var endpoint, routes, result = null, results = [], time, valueunit;
+        var endpoint, routes, result = null, results = [], time, valueunit, maxttl;
 
         var debug_xml = "";
         if(request_options.debug) { 
@@ -656,17 +660,19 @@ exports.traceroute = function(options, callback) {
         xml.on('startElement: nmwg:data', function(data) {
             routes = {};
             time = null;
+            maxttl = 0;
         });        
         xml.on('endElement: traceroute:datum', function(data) {
             var route = data['$'];
             var ttl = parseInt(route.ttl);
+            if(ttl > maxttl) maxttl = ttl;
             if(routes[ttl] === undefined) {
-                routes[ttl] = {hop: undefined, values:[]};
+                routes[ttl] = {hop: undefined, rtts:[]};
             }
             routes[ttl].hop = route.hop;
             var value_id = route.queryNum;
             var value = parseFloat(route.value);
-            routes[ttl].values.push(value); //let's ignore queryNum for now...
+            routes[ttl].rtts.push(value); //let's ignore queryNum for now...
 
             //all datum seem to contain the same time.. so let's promote this to higher in the tree
             time = parseInt(route.timeValue)*1000;
@@ -675,17 +681,21 @@ exports.traceroute = function(options, callback) {
         xml.on('endElement: nmwg:data', function(data) {
             //turn routes object into an array (sorted by ttl)
             var routes_a = [];
-            for(var t = 1; t <= Object.keys(routes).length; t++) {
-                routes_a.push(routes[t]);
+            for(var t = 1; t <= maxttl; t++) {
+                if(routes[t] === undefined) {
+                    routes_a.push({});//missing hop
+                } else {
+                    routes_a.push(routes[t]);
+                }
             }
-            result.push({time: time, unit: valueunit, routes: routes_a});
+            result.push({time: time, rtt_unit: valueunit, hops: routes_a});
         });
         xml.on('end', function() {
             if(request_options.debug) {
                 console.log(debug_xml);
             }
             if(result !== null) {
-                results.push({endpoint: endpoint, data: result});
+                results.push({endpoint: endpoint, routes: result});
             }
             callback(null, results);
         });
@@ -751,8 +761,8 @@ exports.pinger = function(options, callback) {
         });
         */
         var body = scum.render("pinger_madata.ejs", options);
-        //console.log(body);
-        scum.post(body, request_options, function(res){
+        scum.post(body, request_options, function(err, res){
+            if(err) throw err;
             res.setEncoding('utf8');
             var xml = new xmlstream(res);
             var meta1, meta2, data;
