@@ -16,15 +16,12 @@ exports.post_and_parse = function(body, options, callback) {
     }, options);
     //console.dir(options);
     var req = http.request(options, function(res) {
-        //res.statusCode
-        //res.headers
         var resbody = "";
         res.on('data', function (chunk) {
             resbody += chunk;
         });
         res.on('end', function () {                           
             if(res.statusCode == 200) {
-                //var parser = new expat.Parser("UTF-8");
                 if(options.debug) {
                     console.log(resbody);
                 }
@@ -36,6 +33,9 @@ exports.post_and_parse = function(body, options, callback) {
                 callback(new Error("request failed with status code:"+res.statusCode), null);
             }
         });                   
+    });
+    req.setTimeout(10000, function() { //10 seconds too short?
+        req.abort();
     });
     req.on('error', function(e) {
         //console.log("http.requet failed with following options");
@@ -54,6 +54,9 @@ exports.post = function(body, options, callback) {
     }, options);
     var req = http.request(options, function(res) {
         callback(null, res);
+    });
+    req.setTimeout(10000, function() { //10 seconds too short?
+        req.abort();
     });
     req.on('error', function(e) {
         callback(e, null);

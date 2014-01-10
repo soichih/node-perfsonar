@@ -28,6 +28,24 @@ function setaddrtype(endpoints) {
     });
 }
 
+function parse_params(params) {
+    var ps = {};
+    params.forEach(function(param) {
+        if(param._) {
+            ps[param.$.name] = param._;
+        } else {
+            //find the key containing complex object and put raw object..
+            for(var key in param) {
+                if(key != '$') {
+                    ps[param.$.name] = param[key];
+                }
+            }
+        }
+    }); 
+    //console.dir(ps);
+    return ps;
+}
+
 exports.echo = function(options, callback) {
     var default_options = {
         server: "atlas-owamp.bu.edu",
@@ -118,6 +136,18 @@ exports.hostinfo = function(host, callback) {
                     },
                     closeElement: function(name) {
                         if(name == "html") {
+                            if(info.latlng !== undefined) {
+                                var ll = info.latlng.split(",");
+                                if(ll.length == 2) {
+                                    info.latitude = parseFloat(ll[0]);
+                                    info.longitude = parseFloat(ll[1]);
+                                    if(isNaN(info.latitude)) {
+                                        delete info.latitude;
+                                        delete info.longitude;
+                                    }
+                                }
+                                delete info.latlng;
+                            }
                             callback(null, info);
                         }
                     }
@@ -158,13 +188,11 @@ exports.endpoint_iperf = function(options, callback) {
             try {
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                //console.log("perfsonar.endpoints_iperf :: "+options.server+" "+msg);
                 callback(null, null);
             } catch(err) {
                 var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
                 data.forEach(function(item) {
                     var endpoint;
-                    //var id = item['$']['id'];
                     var entry = item['iperf:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
                         //src_type: entry['nmwgt:src'][0]['$']['type'],
@@ -221,17 +249,21 @@ exports.endpoint_owamp = function(options, callback) {
                     var endpoint;
                     //var id = item['$']['id'];
                     var entry = item['owamp:subject'][0]['nmwgt:endPointPair'][0];
+                    var params = parse_params(item['nmwg:parameters'][0]['nmwg:parameter']);
+                    var interval = parseFloat(params.schedule[0]._);
+                    var interval_type = params.schedule[0].$.type;
+
+                    //sometimes dst is missing
+                    if(entry['nmwgt:src'][0]['$'] == undefined) return;
+                    if(entry['nmwgt:dst'][0]['$'] == undefined) return;
+
                     endpoint = {
-                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
-                        count: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][0]['_']),
-                        bucket_width: parseFloat(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_']),
-                        schedule: [ { 
-                            interval: item['nmwg:parameters'][0]['nmwg:parameter'][2]['interval'][0]['_'],
-                            type: item['nmwg:parameters'][0]['nmwg:parameter'][2]['interval'][0]['$']['type'] }
-                        ]
+                        count: parseInt(params.count),
+                        bucket_width: parseFloat(params.bucket_width),
+                        packet_padding: parseInt(params.packet_padding),
+                        schedule: {interval: interval, interval_type: interval_type}
                     }
                     //endpoints[id] = endpoint;
                     endpoints.push(endpoint);
@@ -261,8 +293,7 @@ exports.endpoint_pinger = function(options, callback) {
     var body = scum.render("pinger_endpoints.ejs");
     scum.post_and_parse(body, request_options, function(err, body){
         if(err) {
-            //post error.. could be a real issue, but could also happen if server is not supporting pinger
-            //for now, let's return empty list
+            //post error.. could be a real issue, but could also happen if server is not supporting pinger or timeout
             callback(null, null); //return empty list
             return;
         }
@@ -271,7 +302,6 @@ exports.endpoint_pinger = function(options, callback) {
                 //see if we have message
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                //console.log("perfsonar.endpoints_pinger :: "+options.server+" "+msg);
                 callback(null, null);
             } catch(err) {
                 //parse metadata
@@ -281,16 +311,9 @@ exports.endpoint_pinger = function(options, callback) {
                 metadata.forEach(function(item) {
                     var subject = item['pinger:subject'][0];
 
-                    //what are these things for?
-                    //var subject_id = subject['$']['id'];
-                    //var parameters_id = item['pinger:parameters'][0]['$']['id'];
-                    //var key = item['nmwg:key'][0]['$']['id'][0];
-
                     var mid = item['$']['id'];
                     var endpoint = {
-                        //src_type: subject['nmwgt:endPointPair'][0]['nmwgt:src'][0]['$']['type'],
                         src: subject['nmwgt:endPointPair'][0]['nmwgt:src'][0]['$']['value'],
-                        //dst_type: subject['nmwgt:endPointPair'][0]['nmwgt:dst'][0]['$']['type'],
                         dst: subject['nmwgt:endPointPair'][0]['nmwgt:dst'][0]['$']['value'],
                         _datakeys: []
                     };
@@ -309,13 +332,6 @@ exports.endpoint_pinger = function(options, callback) {
                             value = parseInt(value);
                             break;
                         }
-                        /*
-                        //rename
-                        switch(name) {
-                        case "packetSize": name = "packet_size"; break;
-                        case "packetInterval": name = "packet_interval"; break;
-                        }
-                        */
                         endpoint[name] = value;
                     });
                     endpoints.push(endpoint);
@@ -384,7 +400,6 @@ exports.endpoint_traceroute = function(options, callback) {
                 //see if we have message
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                //console.log("perfsonar.endpoints_pinger :: "+options.server+" "+msg);
                 callback(null, null);
             } catch(err) {
                 var endpoints = [];
@@ -394,13 +409,9 @@ exports.endpoint_traceroute = function(options, callback) {
                     //var id = item['$']['id'];
                     var entry = item['traceroute:subject'][0]['nmwgt:endPointPair'][0];
                     var subjectid = item['traceroute:subject'][0]['$']['id'];
-                    //var mid = subjectid.substring(5,subjectid.length);
                     endpoint = {
-                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value']
-                        //_mid: mid
                     }
                     endpoints.push(endpoint);
                 });
@@ -437,9 +448,7 @@ exports.iperf = function(options, callback) {
         path: options.path,
         debug: options.debug
     };
-    //console.dir(body);
     scum.post_and_parse(body, request_options, function(err, body){
-        //console.dir(JSON.stringify(body));
         if(err) throw err;
         try {
             var all_results = [];
@@ -447,7 +456,6 @@ exports.iperf = function(options, callback) {
                 //any message from server?
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                //console.log("perfsonar.iperf :: "+options.server+" "+msg);
                 callback(null, all_results);
             } catch(err) {
                 //parse metadata
@@ -458,9 +466,7 @@ exports.iperf = function(options, callback) {
                     var id = item['$']['id'];
                     var entry = item['iperf:subject'][0]['nmwgt:endPointPair'][0];
                     endpoint = {
-                        //src_type: entry['nmwgt:src'][0]['$']['type'],
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
                         protocol: item['nmwg:parameters'][0]['nmwg:parameter'][0]['_'],
                         duration: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_'])
@@ -523,7 +529,6 @@ exports.owamp = function(options, callback) {
         path: options.path,
         debug: options.debug
     };
-    //console.log(body);
     scum.post_and_parse(body, request_options, function(err, body){
         if(err) throw err;
         try {
@@ -538,20 +543,23 @@ exports.owamp = function(options, callback) {
                 var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
                 var endpoints = {};
                 data.forEach(function(item) {
-                    var endpoint;
                     var id = item['$']['id'];
                     var entry = item['owamp:subject'][0]['nmwgt:endPointPair'][0];
-                    endpoint = {
-                        //src_type: entry['nmwgt:src'][0]['$']['type'],
+                    var params = parse_params(item['nmwg:parameters'][0]['nmwg:parameter']);
+                    var interval = parseFloat(params.schedule[0]._);
+                    var interval_type = params.schedule[0].$.type;
+
+                    //sometimes dst is missing
+                    if(entry['nmwgt:src'][0]['$'] == undefined) return;
+                    if(entry['nmwgt:dst'][0]['$'] == undefined) return;
+
+                    var endpoint = {
                         src: entry['nmwgt:src'][0]['$']['value'],
-                        //dst_type: entry['nmwgt:dst'][0]['$']['type'],
                         dst: entry['nmwgt:dst'][0]['$']['value'],
-                        count: parseInt(item['nmwg:parameters'][0]['nmwg:parameter'][0]['_']),
-                        bucket_width: parseFloat(item['nmwg:parameters'][0]['nmwg:parameter'][1]['_']),
-                        schedule: [ { 
-                            interval: item['nmwg:parameters'][0]['nmwg:parameter'][2]['interval'][0]['_'],
-                            type: item['nmwg:parameters'][0]['nmwg:parameter'][2]['interval'][0]['$']['type'] }
-                        ]
+                        count: parseInt(params.count),
+                        bucket_width: parseFloat(params.bucket_width),
+                        packet_padding: parseInt(params.packet_padding),
+                        schedule: {interval: interval, interval_type: interval_type}
                     }
                     endpoints[id] = endpoint;
                 });
@@ -623,7 +631,8 @@ exports.traceroute = function(options, callback) {
     //console.log(body);
     scum.post(body, request_options, function(err, res){
         if(err) {
-            //console.dir(request_options);
+            console.log("scum.post failed");
+            console.dir(request_options);
             throw err;
         }
         res.setEncoding('utf8');
@@ -753,13 +762,6 @@ exports.pinger = function(options, callback) {
                 key_to_endpoints[key] = endpoint;
             });
         });
-
-        /*
-        var body = scum.render("pinger_madata.fixed.ejs", options);
-        scum.post_and_parse(body, request_options, function(res){
-            callback(null, res);
-        });
-        */
         var body = scum.render("pinger_madata.ejs", options);
         scum.post(body, request_options, function(err, res){
             if(err) throw err;
@@ -813,24 +815,7 @@ exports.pinger = function(options, callback) {
                     //endpoint = meta2['pinger:subject']['nmwgt:endPointPair'];
                     
                     //for whatever the reason, key could be stored in either meta1 or meta2
-                    /*
-                    if(meta2['nmwg::key'] !== undefined) {
-                    } else {
-                        console.dir(meta1['nmwg::key']);
-                        key = meta1['nmwg::key']['$']['id'];
-                    }
-                    */
                     var key = meta2['nmwg:key']['$']['id'];
-                    /*
-                    results[key] = {endpoint: {
-                        src_type: endpoint['nmwgt:src']['$']['type'],
-                        src: endpoint['nmwgt:src']['$']['value'],
-                        dst_type: endpoint['nmwgt:dst']['$']['type'],
-                        dst: endpoint['nmwgt:dst']['$']['value'],
-                        packetSize: parseInt(pinger_params.packetSize),
-                        _key: meta2['nmwg:key']['$']['id']
-                    }, data: commontimes};
-                    */
                     results[key] = commontimes;
                 } else {
                     //missing

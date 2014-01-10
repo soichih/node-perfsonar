@@ -1,6 +1,6 @@
 # node-perfsonar
 
-## The simplest perfsonar client in the world.
+## World's simplest perfsonar client.
 
 node-perfsonar is a perfsonar client to access data stored in various perfsonar instances around the world.
 
@@ -449,9 +449,7 @@ ps.endpoint({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
 Sample output. 
 
 ```javascript
-{ src_type: 'hostname',
-  src: 'atlas-npt1.bu.edu',
-  dst_type: 'hostname',
+{ src: 'atlas-npt1.bu.edu',
   dst: 'ccperfsonar2-lhcopn.in2p3.fr' }
 {
   "time": 1387756831000,
@@ -459,7 +457,7 @@ Sample output.
   "routes": [
     {
       "hop": "192.5.207.1",
-      "values": [
+      "rtts": [
         0.301,
         0.433,
         0.59
@@ -467,7 +465,7 @@ Sample output.
     },
     {
       "hop": "192.5.89.141",
-      "values": [
+      "rtts": [
         0.478,
         0.556,
         0.613
@@ -475,63 +473,15 @@ Sample output.
     },
     {
       "hop": "192.5.89.29",
-      "values": [
+      "rtts": [
         9.901,
         10.082,
         10.125
       ]
     },
     {
-      "hop": "192.5.89.222",
-      "values": [
-        14.178,
-        14.19,
-        14.177
-      ]
-    },
-    {
-      "hop": "198.71.45.237",
-      "values": [
-        100.873,
-        90.322,
-        100.859
-      ]
-    },
-    {
-      "hop": "62.40.98.115",
-      "values": [
-        88.385,
-        88.455,
-        100.776
-      ]
-    },
-    {
-      "hop": "62.40.98.80",
-      "values": [
-        120.716,
-        108.243,
-        108.347
-      ]
-    },
-    {
-      "hop": "62.40.98.77",
-      "values": [
-        114.185,
-        114.386,
-        114.348
-      ]
-    },
-    {
-      "hop": "62.40.124.70",
-      "values": [
-        129.268,
-        118.524,
-        116.721
-      ]
-    },
-    {
       "hop": "error:requestTimedOut",
-      "values": [
+      "rtts": [
         0,
         0,
         0
@@ -539,7 +489,7 @@ Sample output.
     },
     {
       "hop": "193.51.186.177",
-      "values": [
+      "rtts": [
         119.436,
         119.841,
         119.807
@@ -547,7 +497,7 @@ Sample output.
     },
     {
       "hop": "192.70.69.130",
-      "values": [
+      "rtts": [
         107.796,
         110.56,
         110.389
@@ -555,7 +505,7 @@ Sample output.
     },
     {
       "hop": "193.48.99.78",
-      "values": [
+      "rtts": [
         107.14,
         119.619,
         119.501
