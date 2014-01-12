@@ -48,7 +48,7 @@ function parse_params(params) {
 
 exports.echo = function(options, callback) {
     var default_options = {
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
         starttime: now.getTime() - 3600*1000*3,
@@ -57,7 +57,7 @@ exports.echo = function(options, callback) {
     };
     var options = merge(default_options, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -74,11 +74,6 @@ exports.echo = function(options, callback) {
 //list all endpoints from various services
 exports.endpoint = function(options, callback) {
     async.parallel({
-        /*
-        hostinfo: function(next) {
-            exports.hostinfo(options.server, next);
-        },
-        */
         iperf: function(next) {
             exports.endpoint_iperf(options, next);
         },
@@ -94,20 +89,26 @@ exports.endpoint = function(options, callback) {
     }, callback);
 };
 
-//unsupported feature... 
 exports.hostinfo = function(host, callback) {
     var options = {
         host: host,
+        port: 80,
         path: '/toolkit/',
-        method: 'GET'
+        method: 'GET',
+        /*
+        headers: {
+          'Connection': 'Upgrade',
+          'Upgrade': 'websocket'
+        }
+        */
     };
     var req = http.request(options, function(res) {
+        res.setEncoding('utf8');
         var html = "";
         res.on('data', function(chunk) {
             html += chunk;
         });
         res.on('end', function() {
-            //console.log(html);
             if(res.statusCode == 200) {
                 var next = null;
                 var info = {};
@@ -152,8 +153,13 @@ exports.hostinfo = function(host, callback) {
                         }
                     }
                 });
+            } else {
+                callback(new Error(host + " returned code : "+res.statusCode));
             }
         });
+    });
+    req.setTimeout(10000, function() { //10 seconds too short?
+        req.abort();
     });
     req.on('error', function(e) {
         callback(e, null);
@@ -163,7 +169,7 @@ exports.hostinfo = function(host, callback) {
 
 exports.endpoint_iperf = function(options, callback) {
     var default_options = {
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
         starttime: now.getTime() - 3600*1000*3,
@@ -172,7 +178,7 @@ exports.endpoint_iperf = function(options, callback) {
     };
     var options = merge(default_options, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -215,7 +221,7 @@ exports.endpoint_iperf = function(options, callback) {
 
 exports.endpoint_owamp = function(options, callback) {
     var default_options = {
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
         starttime: now.getTime() - 3600*1000*3,
@@ -224,7 +230,7 @@ exports.endpoint_owamp = function(options, callback) {
     };
     var options = merge(default_options, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -241,7 +247,6 @@ exports.endpoint_owamp = function(options, callback) {
                 //see if we have message
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                //console.log("perfsonar.endpoints_owamp :: "+options.server+" "+msg);
                 callback(null, null);
             } catch(err) {
                 var data = body[0]["nmwg:message"][0]['nmwg:metadata'];
@@ -279,13 +284,13 @@ exports.endpoint_owamp = function(options, callback) {
 
 exports.endpoint_pinger = function(options, callback) {
     var options = merge({
-        server: "web100.maxgigapop.net",
+        host: "web100.maxgigapop.net",
         port: 8075,
         path: "/perfSONAR_PS/services/pinger/ma",
         debug: false
     }, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -293,7 +298,7 @@ exports.endpoint_pinger = function(options, callback) {
     var body = scum.render("pinger_endpoints.ejs");
     scum.post_and_parse(body, request_options, function(err, body){
         if(err) {
-            //post error.. could be a real issue, but could also happen if server is not supporting pinger or timeout
+            //post error.. could be a real issue, but could also happen if host is not supporting pinger or timeout
             callback(null, null); //return empty list
             return;
         }
@@ -374,13 +379,13 @@ exports.endpoint_pinger = function(options, callback) {
 
 exports.endpoint_traceroute = function(options, callback) {
     var options = merge({
-        server: "perfsonar-2.t2.ucsd.edu",
+        host: "perfsonar-2.t2.ucsd.edu",
         port: 8086,
         path: "/perfSONAR_PS/services/tracerouteMA",
         debug: false 
     }, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -390,7 +395,7 @@ exports.endpoint_traceroute = function(options, callback) {
     scum.post_and_parse(body, request_options, function(err, body){
         //console.log(JSON.stringify(body));
         if(err) {
-            //post error.. could be a real issue, but could also happen if server is not supporting pinger
+            //post error.. could be a real issue, but could also happen if host is not supporting pinger
             //for now, let's return empty list
             callback(null, null); //return empty list
             return;
@@ -427,7 +432,7 @@ exports.endpoint_traceroute = function(options, callback) {
 //pull iperf restuls
 exports.iperf = function(options, callback) {
     var default_options = {
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
         starttime: now.getTime() - 3600*1000*5,
@@ -443,7 +448,7 @@ exports.iperf = function(options, callback) {
         body = scum.render("iperf_madata.ejs", options);
     }
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -453,7 +458,7 @@ exports.iperf = function(options, callback) {
         try {
             var all_results = [];
             try {
-                //any message from server?
+                //any message from host?
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
                 callback(null, all_results);
@@ -508,7 +513,7 @@ exports.iperf = function(options, callback) {
 //pull owamp restuls
 exports.owamp = function(options, callback) {
     var default_options = {
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         port: 8085,
         path: "/perfSONAR_PS/services/pSB",
         starttime: now.getTime() - 3600*1000*3,
@@ -524,7 +529,7 @@ exports.owamp = function(options, callback) {
         body = scum.render("owamp_madata.ejs", options);
     }
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -536,7 +541,7 @@ exports.owamp = function(options, callback) {
             try {
                 var data = body[0]["nmwg:message"][0]['nmwg:data'];
                 var msg = data[0]["nmwgr:datum"][0]['_'];
-                console.log("perfsonar.owamp:: "+options.server+" "+msg);
+                console.log("perfsonar.owamp:: "+options.host+" "+msg);
                 callback(null, all_results);
             } catch(err) {
                 //parse metadata
@@ -606,7 +611,7 @@ exports.owamp = function(options, callback) {
 
 exports.traceroute = function(options, callback) {
     var default_options = {
-        server: "perfsonar-2.t2.ucsd.edu",
+        host: "perfsonar-2.t2.ucsd.edu",
         port: 8086,
         path: "/perfSONAR_PS/services/tracerouteMA",
         starttime: now.getTime() - 3600*1000*24, 
@@ -623,7 +628,7 @@ exports.traceroute = function(options, callback) {
         body = scum.render("traceroute_madata.ejs", options);
     }
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug
@@ -633,7 +638,8 @@ exports.traceroute = function(options, callback) {
         if(err) {
             console.log("scum.post failed");
             console.dir(request_options);
-            throw err;
+            callback(err);
+            return;
         }
         res.setEncoding('utf8');
         var xml = new xmlstream(res);
@@ -716,7 +722,7 @@ exports.traceroute = function(options, callback) {
 //so that it has _datakeys array.
 exports.pinger = function(options, callback) {
     var options = merge({
-        server: "web100.maxgigapop.net",
+        host: "web100.maxgigapop.net",
         port: 8075,
         path: "/perfSONAR_PS/services/pinger/ma",
         starttime: now.getTime() - 1800*5*1000,
@@ -726,7 +732,7 @@ exports.pinger = function(options, callback) {
         debug: false
     }, options);
     var request_options = {
-        host: options.server,
+        host: options.host,
         port: options.port,
         path: options.path,
         debug: options.debug

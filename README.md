@@ -15,7 +15,7 @@ If you know the hostname of the perfsonar instance, you can pull list of all end
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoint({server: 'atlas-owamp.bu.edu'}, function(err, endpoints) {
+ps.endpoint({host: 'atlas-owamp.bu.edu'}, function(err, endpoints) {
     if(err) throw err;
     console.dir(endpoints);
 });
@@ -117,7 +117,7 @@ You can pull all owamp test results collected within the last hour by...
 var ps = require('perfsonar');
 var now = new Date().getTime();
 ps.owamp({
-    server: "perfsonar-2.t2.ucsd.edu",
+    host: "perfsonar-2.t2.ucsd.edu",
     starttime: now - 3600*1000, //-1 hour
     endtime: now
 }, function(err, results) {
@@ -166,10 +166,10 @@ Or, you can specify which endpoints you want to pull test results for, by using 
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoint({server: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
+ps.endpoint({host: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
     ps.owamp({
-        server: "perfsonar-2.t2.ucsd.edu",
+        host: "perfsonar-2.t2.ucsd.edu",
         endpoints: [endpoints.owamp[0]] //just pick one randomly from iperf endpoints
     }, function(err, results) {
         if(err) throw err;
@@ -224,11 +224,11 @@ are interested in (you can only specify 1 endpoint -- for now)
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-var server = "mannperf2.itns.purdue.edu";
-ps.endpoint({server: server}, function(err, endpoints) {
+var host = "mannperf2.itns.purdue.edu";
+ps.endpoint({host: host}, function(err, endpoints) {
     if(err) throw err;
     ps.iperf({
-        server: server,
+        host: host,
         starttime: now - 3600*1000*24*90,//90 days
         endpoints: [endpoints.iperf[0] ]
     }, function(err, data) {
@@ -328,7 +328,7 @@ Warning: pingER query is slow! Due to some seriously convoluted interface design
 var ps = require('perfsonar');
 var now = new Date().getTime();
 ps.pinger({
-    server: "perfsonar01.cmsaf.mit.edu",
+    host: "perfsonar01.cmsaf.mit.edu",
     starttime: now - 3600*1000
 }, function(err, results) {
     if(err) throw err;
@@ -412,9 +412,9 @@ but you have to use endpoints returned from endpoints() which contains _datakeys
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoint({server: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
+ps.endpoint({host: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
     ps.pinger({
-        server: "perfsonar01.cmsaf.mit.edu",
+        host: "perfsonar01.cmsaf.mit.edu",
         endpoints: [ endpoints.pinger[0], endpoints.pinger[1] ]
     }, function(err, results) {
         if(err) throw err;
@@ -433,9 +433,9 @@ Querying traceroute results gathered within the last hour.
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.endpoint({server: "atlas-owamp.bu.edu"}, function(err, endpoints) {
+ps.endpoint({host: "atlas-owamp.bu.edu"}, function(err, endpoints) {
     ps.traceroute({
-        server: "atlas-owamp.bu.edu",
+        host: "atlas-owamp.bu.edu",
         starttime: now - 3600*1000,
         endtime: now,
         endpoints: [ endpoints.traceroute[0] ]
