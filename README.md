@@ -1,16 +1,14 @@
 # node-perfsonar
 
-## Simple perfsonar client in node
-
-node-perfsonar is a perfsonar client to access data stored in various perfsonar instances around the world.
+node-perfsonar is a simple perfsonar client.
 
 ```
 npm install perfsonar
 ```
 
-### Measurment Archive
+## Measurment Archive Methods
 
-## ps.ma.endpoint
+### ps.ma.endpoint
 
 perfsonar server publishes lists of endpoints that it monitors.
 If you know the hostname of the perfsonar instance, you can pull list of all endpoints.
@@ -95,7 +93,7 @@ Why is iperf list empty? Because atlas-owamp.bu.edu is a latency monitoring inst
        duration: 30 } ] }
 ```
 
-## ps.ma.owamp
+### ps.ma.owamp
 
 You can pull all owamp test results collected within the last hour by...
 
@@ -200,7 +198,7 @@ Sample output.
 ...
 ```
 
-## ps.ma.iperf
+### ps.ma.iperf
 
 Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to specify endpoint that you 
 are interested in (you can only specify 1 endpoint -- for now)
@@ -301,7 +299,7 @@ Sample output..
 ]
 ```
 
-## ps.ma.pinger
+### ps.ma.pinger
 
 Querying pingER results gathered within the last hour.
 
@@ -408,7 +406,7 @@ ps.ma.endpoint({host: host}, function(err, endpoints) {
 
 ```
 
-## ps.ma.traceroute
+### ps.ma.traceroute
 
 Querying traceroute results gathered within the last hour.
 
