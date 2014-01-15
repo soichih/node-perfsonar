@@ -1,6 +1,6 @@
 # node-perfsonar
 
-## World's simplest perfsonar client.
+## Simple perfsonar client in node
 
 node-perfsonar is a perfsonar client to access data stored in various perfsonar instances around the world.
 
@@ -8,16 +8,19 @@ node-perfsonar is a perfsonar client to access data stored in various perfsonar 
 npm install perfsonar
 ```
 
-## ps.endpoint
+### Measurment Archive
+
+## ps.ma.endpoint
 
 perfsonar server publishes lists of endpoints that it monitors.
 If you know the hostname of the perfsonar instance, you can pull list of all endpoints.
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoint({host: 'atlas-owamp.bu.edu'}, function(err, endpoints) {
+
+ps.ma.endpoint({server: "ps-development.bnl.gov", debug: true}, function(err, endpoints) {
     if(err) throw err;
-    console.dir(endpoints);
+    console.log(JSON.stringify(endpoints, null, 2));
 });
 ```
 
@@ -26,32 +29,24 @@ Example output.
 ```javascript
 { iperf: [],
   owamp:
-   [ { src_type: 'ipv4',
-       src: '192.12.15.26',
-       dst_type: 'ipv4',
+   [ { src: '192.12.15.26',
        dst: '192.5.207.251',
        count: 18000,
        bucket_width: 0.001,
        schedule: [Object] },
-     { src_type: 'ipv4',
-       src: '192.41.230.19',
-       dst_type: 'ipv4',
+     { src: '192.41.230.19',
        dst: '192.5.207.251',
        count: 18000,
        bucket_width: 0.001,
        schedule: [Object] },
     ...
-     { src_type: 'ipv4',
-       src: '128.135.158.216',
-       dst_type: 'ipv4',
+     { src: '128.135.158.216',
        dst: '192.5.207.251',
        count: 18000,
        bucket_width: 0.001,
        schedule: [Object] } ],
   pinger:
-   [ { src_type: 'ipv4',
-       src: '192.5.207.251',
-       dst_type: 'ipv4',
+   [ { src: '192.5.207.251',
        dst: '134.158.20.192',
        _datakeys: [Object],
        count: 10,
@@ -59,9 +54,7 @@ Example output.
        ttl: 255,
        transport: 'icmp',
        packetInterval: 1 },
-     { src_type: 'ipv4',
-       src: '192.5.207.251',
-       dst_type: 'ipv4',
+     { src: '192.5.207.251',
        dst: '193.62.56.9',
        _datakeys: [Object],
        count: 10,
@@ -70,9 +63,7 @@ Example output.
        transport: 'icmp',
        packetInterval: 1 },
     ...
-     { src_type: 'ipv4',
-       src: '192.5.207.251',
-       dst_type: 'ipv4',
+     { src: '192.5.207.251',
        dst: '192.101.161.186',
        _datakeys: [Object],
        count: 10,
@@ -88,51 +79,46 @@ Why is iperf list empty? Because atlas-owamp.bu.edu is a latency monitoring inst
 { pinger: [],
   owamp: [],
   iperf:
-   [ { src_type: 'hostname',
-       src: 'perfsonar2.pi.infn.it',
-       dst_type: 'hostname',
+   [ { src: 'perfsonar2.pi.infn.it',
        dst: 'atlas-npt2.bu.edu',
        protocol: 'TCP',
        duration: 30 },
-     { src_type: 'hostname',
+     { 
        src: 'perfsonar-1.t2.ucsd.edu',
-       dst_type: 'hostname',
        dst: 'atlas-npt2.bu.edu',
        protocol: 'TCP',
        duration: 30 }
     ...
-     { src_type: 'hostname',
-       src: 'lhcmon.bnl.gov',
-       dst_type: 'hostname',
+     { src: 'lhcmon.bnl.gov',
        dst: 'atlas-npt2.bu.edu',
        protocol: 'TCP',
        duration: 30 } ] }
 ```
 
-## ps.owamp
+## ps.ma.owamp
 
 You can pull all owamp test results collected within the last hour by...
 
 ```javascript
 var ps = require('perfsonar');
-var now = new Date().getTime();
-ps.owamp({
-    host: "perfsonar-2.t2.ucsd.edu",
-    starttime: now - 3600*1000, //-1 hour
-    endtime: now
-}, function(err, results) {
+ps.ma.endpoint({host: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
-    console.dir(results[0]); //displaying only the first result.. to keep this README simple
-})
+    ps.ma.owamp({
+        host: "perfsonar-2.t2.ucsd.edu", 
+        endpoints: [endpoints.owamp[0]]//just pick one from the list
+    }, function(err, data) {
+        if(err) throw err;
+        console.dir(data[0].endpoint); 
+        console.dir(data[0].data); 
+    });
+});
 ```
 
 Sample output..
 
 ```javascript
 { endpoint:
-   { src_type: 'ipv4',
-     src: '132.239.252.68',
-     dst_type: 'ipv4',
+   { src: '132.239.252.68',
      dst: '169.228.130.40',
      count: 108000,
      bucket_width: 0.0001,
@@ -168,7 +154,7 @@ Or, you can specify which endpoints you want to pull test results for, by using 
 var ps = require('perfsonar');
 ps.endpoint({host: "perfsonar-2.t2.ucsd.edu"}, function(err, endpoints) {
     if(err) throw err;
-    ps.owamp({
+    ps.ma.owamp({
         host: "perfsonar-2.t2.ucsd.edu",
         endpoints: [endpoints.owamp[0]] //just pick one randomly from iperf endpoints
     }, function(err, results) {
@@ -185,9 +171,7 @@ Sample output.
 
 ```javascript
 { endpoint:
-   { src_type: 'ipv4',
-     src: '132.239.252.68',
-     dst_type: 'ipv4',
+   { src: '132.239.252.68',
      dst: '169.228.130.40',
      count: 108000,
      bucket_width: 0.0001,
@@ -216,7 +200,7 @@ Sample output.
 ...
 ```
 
-## ps.iperf
+## ps.ma.iperf
 
 Similar to ps.owamp, you can query iperf (bandwidth) test results. You can also set endpoints option to specify endpoint that you 
 are interested in (you can only specify 1 endpoint -- for now)
@@ -224,13 +208,14 @@ are interested in (you can only specify 1 endpoint -- for now)
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-var host = "mannperf2.itns.purdue.edu";
-ps.endpoint({host: host}, function(err, endpoints) {
+var host = "chic-pt1.es.net";
+ps.ma.endpoint({host: host}, function(err, endpoints) {
+    console.dir(endpoints);
     if(err) throw err;
-    ps.iperf({
+    ps.ma.iperf({
         host: host,
-        starttime: now - 3600*1000*24*90,//90 days
-        endpoints: [endpoints.iperf[0] ]
+        starttime: now - 3600*1000*24*90,
+        endpoints: [ endpoints.iperf[0] ]
     }, function(err, data) {
         if(err) throw err;
         console.log(JSON.stringify(data, null, 2));
@@ -244,9 +229,7 @@ Sample output..
 [
   {
     "endpoint": {
-      "src_type": "hostname",
       "src": "hcc-ps02.unl.edu",
-      "dst_type": "ipv4",
       "dst": "128.211.143.4",
       "protocol": "TCP",
       "duration": 30
@@ -318,7 +301,7 @@ Sample output..
 ]
 ```
 
-## ps.pinger
+## ps.ma.pinger
 
 Querying pingER results gathered within the last hour.
 
@@ -327,14 +310,16 @@ Warning: pingER query is slow! Due to some seriously convoluted interface design
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.pinger({
-    host: "perfsonar01.cmsaf.mit.edu",
-    starttime: now - 3600*1000
-}, function(err, results) {
-    if(err) throw err;
-    //display all results..
-    results.forEach(function(result) {
-        console.dir(result);
+var host = "perfsonar01.cmsaf.mit.edu";
+ps.ma.endpoint({host: host}, function(err, endpoints) {
+    ps.ma.pinger({
+        host: host,
+        endpoints: [ endpoints.pinger[0], endpoints.pinger[1] ]
+    }, function(err, results) {
+        if(err) throw err;
+        results.forEach(function(result) {
+            console.dir(result);
+        });
     });
 });
 ```
@@ -342,9 +327,7 @@ ps.pinger({
 Sample output
 
 ```javascript
-{ src_type: 'ipv4',
-  src: '18.12.1.171',
-  dst_type: 'ipv4',
+{ src: '18.12.1.171',
   dst: '131.225.206.112',
   _datakeys: [ '33' ],
   count: 10,
@@ -353,9 +336,7 @@ Sample output
   transport: 'icmp',
   packetInterval: 1,
   data: [] }
-{ src_type: 'ipv4',
-  src: '18.12.1.171',
-  dst_type: 'ipv4',
+{ src: '18.12.1.171',
   dst: '193.109.172.188',
   _datakeys: [ '32', '52' ],
   count: 10,
@@ -412,9 +393,10 @@ but you have to use endpoints returned from endpoints() which contains _datakeys
 
 ```javascript
 var ps = require('perfsonar');
-ps.endpoint({host: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
-    ps.pinger({
-        host: "perfsonar01.cmsaf.mit.edu",
+var host = "perfsonar01.cmsaf.mit.edu";
+ps.ma.endpoint({host: host}, function(err, endpoints) {
+    ps.ma.pinger({
+        host: host,
         endpoints: [ endpoints.pinger[0], endpoints.pinger[1] ]
     }, function(err, results) {
         if(err) throw err;
@@ -426,22 +408,17 @@ ps.endpoint({host: "perfsonar01.cmsaf.mit.edu"}, function(err, endpoints) {
 
 ```
 
-## ps.traceroute
+## ps.ma.traceroute
 
 Querying traceroute results gathered within the last hour.
 
 ```javascript
 var ps = require('perfsonar');
 var now = new Date().getTime();
-ps.endpoint({host: "atlas-owamp.bu.edu"}, function(err, endpoints) {
-    ps.traceroute({
-        host: "atlas-owamp.bu.edu",
-        starttime: now - 3600*1000,
-        endtime: now,
-        endpoints: [ endpoints.traceroute[0] ]
-    }, function(err, results) {
-        console.dir(results[0].endpoint);
-        console.log(JSON.stringify(results[0].data[0], undefined, 2));
+var host = "perfsonar-2.t2.ucsd.edu";
+ps.ma.endpoint({host: host}, function(err, endpoints) {
+    ps.ma.traceroute({host: host, endpoints: [ endpoints.traceroute[0]]}, function(err, results) {
+        console.log(JSON.stringify(results, undefined, 2));
     });
 });
 ```
@@ -517,5 +494,3 @@ Sample output.
 ```
 
 Values usually contains 3 values.. for each tests. You have to have 1 and only 1 endpoint specified (for now)
-
-[r2h]: http://github.com/github/markup/tree/master/lib/github/commands/rest2html
