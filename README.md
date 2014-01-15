@@ -517,3 +517,5 @@ Sample output.
 ```
 
 Values usually contains 3 values.. for each tests. You have to have 1 and only 1 endpoint specified (for now)
+
+[r2h]: http://github.com/github/markup/tree/master/lib/github/commands/rest2html
