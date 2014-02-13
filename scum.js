@@ -35,6 +35,7 @@ exports.post_and_parse = function(body, options, callback) {
         });                   
     });
     req.setTimeout(10000, function() { //10 seconds too short?
+        console.error("http.request timeout");
         req.abort();
     });
     req.on('error', function(e) {

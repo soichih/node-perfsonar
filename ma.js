@@ -64,7 +64,10 @@ exports.echo = function(options, callback) {
     };
     var body = scum.render("echo.ejs");
     scum.post_and_parse(body, request_options, function(err, body){
-        if(err) throw err;
+        if(err) {
+            callback(err);
+            return;
+        }
         var data = body[0]["nmwg:message"][0]['nmwg:data'];
         var msg = data[0]["nmwgr:datum"][0]['_'];
         callback(null, msg);
@@ -376,7 +379,10 @@ exports.iperf = function(options, callback) {
         debug: options.debug
     };
     scum.post_and_parse(body, request_options, function(err, body){
-        if(err) throw err;
+        if(err) {
+            callback(err);
+            return;
+        }
         try {
             var all_results = [];
             try {
@@ -457,7 +463,10 @@ exports.owamp = function(options, callback) {
         debug: options.debug
     };
     scum.post_and_parse(body, request_options, function(err, body){
-        if(err) throw err;
+        if(err) {
+            callback(err);
+            return;
+        }
         try {
             var all_results = [];
             try {
@@ -692,7 +701,11 @@ exports.pinger = function(options, callback) {
         });
         var body = scum.render("pinger_madata.ejs", options);
         scum.post(body, request_options, function(err, res){
-            if(err) throw err;
+            if(err) {
+                callback(err);
+                return;
+            }
+
             res.setEncoding('utf8');
             var xml = new xmlstream(res);
             var meta1, meta2, data;
