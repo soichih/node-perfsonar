@@ -6,6 +6,111 @@ node-perfsonar is a simple perfsonar client.
 npm install perfsonar
 ```
 
+## Lookup Service
+
+perfSONAR provides global lookup service, which is a database of all perfSONAR toolkit sites that are
+registered to the global lookup service. 
+
+To query it, you first need to know the hostnames for those global lookup services
+
+### ls.global.gethosts()
+
+Return list of all active global lookup service instances.
+
+```javascript
+ls.global.gethosts((err, hosts)=>{
+    if(err) throw err;
+    console.dir(hosts);
+});
+```
+
+```javascript
+[ 'http://ps-west.es.net:8090/lookup/records',
+  'http://ps-east.es.net:8090/lookup/records',
+  'http://monipe-ls.rnp.br:8090/lookup/records',
+  'http://ps-sls.sanren.ac.za:8090/lookup/records',
+  'http://nsw-brwy-sls1.aarnet.net.au:8090/lookup/records/' ]
+```
+
+Each lookup service instances contains different sets of hosts, so you basically need to query them all..
+
+### ls.query
+
+Query lookup service. 
+
+To query for toolkit hosts do something like .. 
+
+```javascript
+ls.query('http://ps-west.es.net:8090/lookup/records', {
+    type: "host"
+}, function(err, records) {
+    if(err) throw err;
+    console.dir(records);
+});
+```
+
+```javascript
+{ 'host-vm': [ '0' ],
+  'host-administrators': [ '' ],
+  expires: '2017-02-12T02:25:54.153Z',
+  'host-hardware-processorcore': [ '4' ],
+  'host-os-kernel': [ 'Linux 2.6.32-504.16.2.el6.web100.x86_64' ],
+  'host-os-name': [ 'CentOS' ],
+  type: [ 'host' ],
+  'host-hardware-processorspeed': [ '2599.800 MHz' ],
+  'host-os-version': [ '6.8 (Final)' ],
+  'host-net-interfaces': [ 'lookup/interface/2b6a8267-f0d2-424f-9c5b-b3fcb37f58a1' ],
+  'host-productname': [ 'RS161-E2/PA2' ],
+  'client-uuid': [ '1df374e0-6b3c-42e0-aca1-f77c747c8e5f' ],
+  'pshost-bundle': [ 'perfsonar-toolkit' ],
+  state: 'renewed',
+  'host-net-tcp-maxbuffer-recv': [ '67108864 bytes' ],
+  'host-net-tcp-autotunemaxbuffer-send': [ '33554432 bytes' ],
+  'pshost-toolkitversion': [ '3.5.1.7' ],
+  'host-manufacturer': [ 'ASUS' ],
+  'host-hardware-cpuid': [ 'Dual Core AMD Opteron(tm) Processor 285' ],
+  'host-hardware-processorcount': [ '2' ],
+  'pshost-bundle-version': [ '3.5.1.7' ],
+  'host-net-tcp-congestionalgorithm': [ 'htcp' ],
+  'host-name': [ '137.78.167.76', 'ps-171-230-node1.jpl.nasa.gov' ],
+  uri: 'lookup/host/b6ce7f69-3bc7-476d-8276-394f0f8ca9e6',
+  'host-net-tcp-autotunemaxbuffer-recv': [ '33554432 bytes' ],
+  'group-domains': [ 'jpl.nasa.gov', 'nasa.gov' ],
+  'host-hardware-memory': [ '3390 MB' ],
+  'host-net-tcp-maxbuffer-send': [ '67108864 bytes' ],
+  ttl: [] }
+
+```
+
+> For URL, use entries obtained from ls.global.gethosts
+
+host records isn't enough to know what services this host is running.. For that you need to query services by matching host's client-uuid field to service record's
+
+```javascript
+ls.query('http://ps-west.es.net:8090/lookup/records', {
+    type: "service",
+    "client-uuid": "1df374e0-6b3c-42e0-aca1-f77c747c8e5f",
+}, function(err, records) {
+    if(err) throw err;
+    records.forEach((record)=>{
+        console.log(record['service-name']);
+    });
+});
+```
+
+```javascript
+[ 'MP Measurement Point' ]
+[ 'OWAMP Server' ]
+[ 'Measurement Archive' ]
+[ 'Traceroute Responder' ]
+[ 'Ping Responder' ]
+[ 'BWCTL Measurement Point' ]
+[ 'BWCTL Server' ]
+```
+
+> You can use "host-url" to look for services, but keep it mind that host-url changes constantly even for the same host. Use client-uuid if you are going to cache it.
+
+
 ## Measurment Archive Methods
 
 ### ps.ma.endpoint

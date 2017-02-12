@@ -1,11 +1,11 @@
 
-var scum = require('./scum');
-var merge = require('merge');
-var async = require('async');
-var xmlstream = require('xml-stream');
-var http = require('http');
-var htmlp = require('html-parser');
-var net = require('net');
+const scum = require('./scum');
+const merge = require('merge');
+const async = require('async');
+const xmlstream = require('xml-stream');
+const http = require('http');
+const htmlp = require('html-parser');
+const net = require('net');
 
 var now = new Date();
 
